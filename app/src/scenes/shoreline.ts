@@ -181,7 +181,7 @@ export function createShoreline(): Scene {
             enter('swash', 4)
             break
           case 'swash':
-            enter('lull', randInt(rng, 2, 5))
+            enter('lull', randInt(rng, 2, 17)) // flat water 0.6 s – 5 s between waves
             break
           case 'lull':
             startWave(ctx)
