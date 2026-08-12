@@ -9,6 +9,7 @@ import { FrameLoop } from './engine/loop'
 import { drawClock } from './engine/clock'
 import { createFireplace } from './scenes/fireplace'
 import { createSnowfall } from './scenes/snowfall'
+import { createShoreline } from './scenes/shoreline'
 
 // --- Phase 3/4: engine + fireplace. Menu arrives in Phase 5; for now the app
 // boots straight into the scene. Click = clock on/off, double-tap = exit
@@ -31,7 +32,10 @@ const loop = new FrameLoop(bridge, CONTAINER_ID, CONTAINER_NAME)
 
 // Dev scene switch until the Phase 5 menu exists: `?scene=snow` etc.
 const SCENE_PARAM = new URLSearchParams(location.search).get('scene')
-const scene = SCENE_PARAM === 'snow' ? createSnowfall() : createFireplace()
+const scene =
+  SCENE_PARAM === 'snow' ? createSnowfall()
+  : SCENE_PARAM === 'shore' ? createShoreline()
+  : createFireplace()
 
 // Optional clock overlay (top-right, ＨＨ：ＭＭ). Click toggles; persisted.
 const CLOCK_KEY = 'clockOn'
