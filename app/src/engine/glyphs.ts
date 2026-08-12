@@ -14,6 +14,7 @@ export const B6 = '▆'
 export const B7 = '▇'
 export const B8 = '█'
 export const SHADE = '▒'
+export const HALF_L = '▌' // left-half block (▐ right-half is MISSING from the font)
 
 // Lines / structure
 export const H_HEAVY = '━'
@@ -28,6 +29,15 @@ export const EDGE_R = '▕'
 export const DIAG_UP = '╱'
 export const DIAG_DOWN = '╲'
 export const TRI_UP = '▲'
+export const TRI_UP_HOLLOW = '△'
+// Filled corner triangles — diagonal corner cuts for multi-cell shapes.
+// Sim-verified 2026-08-12 (starfield moon experiment — moon was cut, but
+// the glyphs render on the 20 px lattice). ⚠ re-verify on hardware before
+// relying on them. Currently unused.
+export const TRI_BR = '◢' // filled toward bottom-right (top-left corner)
+export const TRI_BL = '◣' // filled toward bottom-left (top-right corner)
+export const TRI_TL = '◤' // filled toward top-left (bottom-right corner)
+export const TRI_TR = '◥' // filled toward top-right (bottom-left corner)
 export const CROSS_LINES = '┼' // light cross — window mullion crossing
 export const TEE_DOWN = '┬'
 export const TEE_RIGHT = '├'

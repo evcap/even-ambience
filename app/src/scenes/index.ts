@@ -2,6 +2,7 @@ import { createFireplace } from './fireplace'
 import { createSnowfall } from './snowfall'
 import { createShoreline } from './shoreline'
 import { createRain } from './rain'
+import { createCandlelight } from './candlelight'
 import type { Scene } from './types'
 
 // Scene registry — menu order. Instances are created once; entering a scene
@@ -11,4 +12,5 @@ export const SCENES: Scene[] = [
   createSnowfall(),
   createShoreline(),
   createRain(),
+  createCandlelight(),
 ]

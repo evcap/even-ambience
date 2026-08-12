@@ -108,6 +108,7 @@ const windowStrips = () => [
 const SCENE_STRIPS: Record<string, () => TextContainerProperty[]> = {
   snowfall: windowStrips,
   rain: windowStrips,
+  candlelight: windowStrips,
 }
 
 const scenePage = (sceneId: string) => {
