@@ -56,7 +56,9 @@ interface Foam {
 interface SandFoam {
   col: number
   rowIdx: number // index into SAND_ROWS
+  delay: number // frames before this splash lands (wave crashes row by row)
   age: number
+  wet: number // frames of ▒ before decaying through ○ → ◌
   life: number
 }
 
@@ -157,14 +159,23 @@ export function createShoreline(): Scene {
             for (let col = 0; col < COLS; col++) {
               wet[col] = Math.max(wet[col], Math.round((4 + rng() * 5) * amp))
             }
-            // A few foam circles splash onto the sand rows with the wave,
-            // then fade back to sand.
+            // A few foam splashes hit the sand rows with the wave. Each
+            // runs the swash cadence in miniature (▒ → ○ → ◌ → sand), and
+            // lands one frame later per row down the beach, so the wave
+            // visibly crashes over the shore line by line.
             for (let n = randInt(rng, 4, 7); n > 0; n--) {
+              const rowIdx = randInt(rng, 0, SAND_ROWS.length - 1)
+              const wetFrames = randInt(rng, 2, 3)
               sandFoams.push({
                 col: randInt(rng, 0, COLS - 1),
-                rowIdx: randInt(rng, 0, SAND_ROWS.length - 1),
+                rowIdx,
+                // Swash row leads; each sand row trails it by one frame.
+                // (+2 not +1: the spawn tick itself consumes one delay —
+                // decrement and render happen in the same tick.)
+                delay: rowIdx + 2,
                 age: 0,
-                life: randInt(rng, 2, 5),
+                wet: wetFrames,
+                life: wetFrames + 4,
               })
             }
             enter('swash', 4)
@@ -216,6 +227,10 @@ export function createShoreline(): Scene {
       // As each splash sinks in, it rearranges the grain where it hit
       // (and sometimes a neighbouring cell) — waves reshape the sand.
       sandFoams = sandFoams.filter((f) => {
+        if (f.delay > 0) {
+          f.delay--
+          return true
+        }
         if (++f.age <= f.life) return true
         const row = sand[f.rowIdx]
         row[f.col] = chance(rng, 0.4) ? B2 : B1
@@ -266,7 +281,9 @@ export function createShoreline(): Scene {
         for (let col = 0; col < COLS; col++) grid.put(col, SAND_ROWS[i], sand[i][col])
       }
       for (const f of sandFoams) {
-        grid.put(f.col, SAND_ROWS[f.rowIdx], f.age <= f.life / 2 ? P_MED : P_FAINT)
+        if (f.delay > 0) continue // not landed yet — sand shows through
+        const g = f.age <= f.wet ? SHADE : f.age <= f.wet + 2 ? P_MED : P_FAINT
+        grid.put(f.col, SAND_ROWS[f.rowIdx], g)
       }
     },
   }
