@@ -1,0 +1,22 @@
+{
+  "name": "even-ambience",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "sim": "evenhub-simulator http://localhost:5173",
+    "sim:headless": "evenhub-simulator http://localhost:5173 --automation-port 9898",
+    "qr": "evenhub qr --http --port 5173",
+    "pack": "npm run build && evenhub pack app.json dist -o ambience.ehpk"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "vite": "^6.4.3"
+  },
+  "dependencies": {
+    "@evenrealities/even_hub_sdk": "0.0.13"
+  }
+}

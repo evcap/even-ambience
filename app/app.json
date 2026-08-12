@@ -1,0 +1,16 @@
+{
+  "package_id": "com.evcap.ambience",
+  "edition": "202601",
+  "name": "Ambience",
+  "version": "0.1.0",
+  "min_app_version": "2.2.7",
+  "min_sdk_version": "0.0.13",
+  "tagline": "Animated retro moodscapes",
+  "description": "Ambient glyph-art scenes for quiet moments: a crackling fireplace, falling snow, waves on a shore.",
+  "author": "evcap",
+  "entrypoint": "index.html",
+  "permissions": [],
+  "supported_languages": [
+    "en"
+  ]
+}
