@@ -40,6 +40,7 @@ export const P_FAINT = '◌'
 export const P_MED = '○'
 export const P_STAR = '＊' // fullwidth asterisk
 export const P_FAT = '●'
+export const P_RING = '◎' // bullseye — impact ripple
 
 // Misc scene glyphs
 export const STAR = '★'

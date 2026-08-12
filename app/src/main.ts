@@ -87,7 +87,7 @@ const strip = (id: number, name: string, x: number, y: number, w: number, h: num
     isEventCapture: 0,
   })
 
-// Snowfall's window frame is drawn with container borders, not glyphs:
+// The window frame (snowfall, rain) is drawn with container borders, not glyphs:
 // glyph verticals are inherently dashed (21 px ink on a 27 px pitch), and
 // borders are continuous pixel lines. The sill is a FILLED bar (borderWidth
 // 3 on a 6 px strip): it spans the full 576 px — a glyph bar can't, the
@@ -107,6 +107,7 @@ const windowStrips = () => [
 // the target scene's container set.
 const SCENE_STRIPS: Record<string, () => TextContainerProperty[]> = {
   snowfall: windowStrips,
+  rain: windowStrips,
 }
 
 const scenePage = (sceneId: string) => {
