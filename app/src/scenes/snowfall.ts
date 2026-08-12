@@ -14,8 +14,9 @@ import type { Scene, SceneContext } from './types'
 //            so a column's accumulation just raises its block ▂→▃→▄→▅ —
 //            snow and sill are one glyph, flush by construction.
 //   flakes — depth ramp ◌ (far, slow) → ○ → ＊ → ● (near, fast, rare)
-//   melt   — every landed flake melts independently (~50 s mean), so the
-//            sill's snow depth rises and falls forever
+//   melt   — every landed flake melts independently after a uniform random
+//            33–70 s lifetime, so the sill's snow depth rises and falls
+//            forever
 //
 // Layout (28×10): rows 0–8 are glass; row 9 = sill + snow depth.
 const PILE_ROW = 9
@@ -28,13 +29,16 @@ const FALL_EVERY = [3, 2, 1, 1] // frames per row of fall, by depth
 const DRIFT_SCALE = [0.35, 0.55, 0.8, 1.0] // near flakes feel the wind more
 
 // Sill accumulation: landings-per-column before the sill block grows a
-// step (▂ bare → ▃ → ▄ → ▅). Every landed flake melts independently
-// (~50 s mean lifetime), so snow depth is an equilibrium between snowfall
-// and melt — it rises and falls forever instead of saturating.
+// step (▂ bare → ▃ → ▄ → ▅). Every landed flake melts independently after
+// a uniform random lifetime, so snow depth is an equilibrium between
+// snowfall and melt — it rises and falls forever instead of saturating.
 const SILL_TIERS: Array<[number, string]> = [[16, B5], [10, B4], [5, B3]]
 const SILL_BARE = B2
 const SILL_CAP = 20
-const MELT_PER_UNIT = 0.006 // per-frame chance each landed flake melts
+// Per-unit melt lifetime in frames (300 ms each): ~33–70 s uniform.
+// LIFE_MAX stretches how long lucky snow lingers; LIFE_MIN is the floor.
+const LIFE_MIN = 110
+const LIFE_MAX = 233
 
 interface Flake {
   x: number // float; rendered at Math.round
@@ -49,11 +53,13 @@ export function createSnowfall(): Scene {
   let windTarget = 0
   let nextWindShift = 0
   let nextGustAt = 0
-  const sillCount: number[] = Array(28).fill(0)
+  // Per-column landed units, stored as their melt frames.
+  const sill: number[][] = Array.from({ length: 28 }, () => [])
 
   function spawn(ctx: SceneContext): void {
+    // Mix: ◌ 34% / ○ 26% / ＊ 35% (user-tuned) / ● 5% (rare)
     const r = ctx.rng()
-    const depth = r < 0.4 ? 0 : r < 0.7 ? 1 : r < 0.95 ? 2 : 3 // fat ● rare
+    const depth = r < 0.34 ? 0 : r < 0.6 ? 1 : r < 0.95 ? 2 : 3
     flakes.push({
       x: PANE_LEFT - 0.5 + ctx.rng() * (PANE_RIGHT - PANE_LEFT + 1),
       y: 0,
@@ -77,7 +83,7 @@ export function createSnowfall(): Scene {
       windTarget = 0
       nextWindShift = 0
       nextGustAt = randInt(ctx.rng, 80, 160)
-      sillCount.fill(0)
+      for (const col of sill) col.length = 0 // bare sill — building from scratch is the fun
       // Pre-scatter a few flakes so the scene doesn't start empty.
       for (let n = 0; n < 12; n++) {
         spawn(ctx)
@@ -117,18 +123,22 @@ export function createSnowfall(): Scene {
         const col = Math.round(f.x)
         if (f.x < -0.5 || f.x > 27.5) return false
         if (f.y > PILE_ROW - 1) {
-          sillCount[col] = Math.min(sillCount[col] + 1, SILL_CAP)
+          // A fat ● flake (rare) is a chunk of snow: it guarantees a
+          // visible pile where it lands, jumping the column to the first
+          // tier at minimum. Ordinary flakes add one landing.
+          const gain = f.depth === 3 ? 5 : 1
+          for (let n = 0; n < gain && sill[col].length < SILL_CAP; n++) {
+            sill[col].push(frame + randInt(rng, LIFE_MIN, LIFE_MAX))
+          }
           return false
         }
         return true
       })
 
-      // Melt: piles thin out layer by layer (a column drops a tier once
-      // enough of its landings have melted away).
+      // Melt: each landed unit expires at its own frame; piles thin out
+      // layer by layer as their landings age past their lifetimes.
       for (let col = 0; col < 28; col++) {
-        if (sillCount[col] > 0 && chance(rng, Math.min(0.5, sillCount[col] * MELT_PER_UNIT))) {
-          sillCount[col]--
-        }
+        if (sill[col].length > 0) sill[col] = sill[col].filter((melts) => melts > frame)
       }
 
       // ---- render (flakes first; structure overwrites = "behind glass") ----
@@ -140,7 +150,7 @@ export function createSnowfall(): Scene {
       // wins over passing flakes). Frame/mullion/crossbar are container
       // borders (main.ts); this row is the window's bottom edge.
       for (let col = PANE_LEFT; col <= PANE_RIGHT; col++) {
-        grid.put(col, PILE_ROW, sillGlyph(sillCount[col]))
+        grid.put(col, PILE_ROW, sillGlyph(sill[col].length))
       }
     },
   }
